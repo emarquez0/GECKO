@@ -227,19 +227,19 @@ class GeckoModel(Model):
         After changing the protein and carbohydrate content based on measurements, adjust the corresponding
         coefficients of the biomass reaction.
         """
-        for met in self.protein_reaction.metabolites:
+        for met,value in self.protein_reaction.metabolites.items():
             is_prot = 'protein' in met.name
             if not is_prot:
                 coefficient = self.fp_fraction_protein * self.protein_reaction.metabolites[met]
-                self.protein_reaction.metabolites[met] = coefficient
+                self.protein_reaction.add_metabolites({met:-value+coefficient})
 
-        for met in self.carbohydrate_reaction.metabolites:
+        for met,value in self.carbohydrate_reaction.metabolites.items():
             is_carb = 'carbohydrate' in met.name
             if not is_carb:
                 coefficient = self.fc_carbohydrate_content * self.carbohydrate_reaction.metabolites[met]
-                self.carbohydrate_reaction.metabolites[met] = coefficient
+                self.carbohydrate_reaction.add_metabolites({met:-value+coefficient})
 
-        for met in self.biomass_reaction.metabolites:
+        for met,value in self.biomass_reaction.metabolites.items():
             sign = -1 if self.biomass_reaction.metabolites[met] < 0 else 1
             is_atp = 'ATP' in met.name
             is_adp = 'ADP' in met.name
@@ -250,7 +250,7 @@ class GeckoModel(Model):
                 coefficient = sign * (self.gam +
                                       self.amino_acid_polymerization_cost * self.p_total +
                                       self.carbohydrate_polymerization_cost * self.c_total)
-                self.biomass_reaction.metabolites[met] = coefficient
+                self.biomass_reaction.add_metabolites({met:-value+coefficient})
 
     def adjust_pool_bounds(self, min_objective=0.05, inplace=False, tolerance=1e-9):
         """Adjust protein pool bounds minimally to make model feasible.
